@@ -35,9 +35,9 @@ export type PlaceStats = {
 };
 
 export const MARKERS = [
-  { key: 'english_staff', label: 'English-speaking staff', short: 'English staff' },
-  { key: 'english_menu', label: 'English menu/kiosk', short: 'English menu' },
-  { key: 'solo_friendly', label: 'Solo-friendly', short: 'Solo-friendly' },
+  { key: 'english_staff', label: 'English-speaking staff', short: 'English staff', no: 'No English staff' },
+  { key: 'english_menu', label: 'English menu/kiosk', short: 'English menu', no: 'No English menu' },
+  { key: 'solo_friendly', label: 'Solo-friendly', short: 'Solo-friendly', no: 'Not solo-friendly' },
 ] as const;
 export type MarkerKey = (typeof MARKERS)[number]['key'];
 
@@ -46,7 +46,7 @@ export function hasBadge(yes: number, answers: number): boolean {
   return answers >= 2 && yes * 2 > answers;
 }
 
-export type Badge = { key: MarkerKey; label: string; short: string; yes: number; answers: number };
+export type Badge = { key: MarkerKey; label: string; short: string; no: string; yes: number; answers: number };
 
 export function markerCounts(p: PlaceStats, key: MarkerKey) {
   return { yes: p[`${key}_yes`], answers: p[`${key}_answers`] };
@@ -144,4 +144,34 @@ export function naverUrls(p: Pick<PlaceStats, 'name_en' | 'name_ko' | 'naver_url
   if (p.naver_url) return [p.naver_url];
   const q = encodeURIComponent(p.name_ko || p.name_en);
   return [`nmap://search?query=${q}&appname=com.techolon.wandr`, `https://map.naver.com/p/search/${q}`];
+}
+
+export type RecommendationFields = {
+  spent_krw: number | null;
+  english_staff: boolean | null;
+  english_menu: boolean | null;
+  solo_friendly: boolean | null;
+  created_at: string;
+};
+
+/** Recomputes a place's aggregates from its recommendations, exactly like the place_stats view. */
+export function statsFromRecs(place: PlaceStats, recs: RecommendationFields[]): PlaceStats {
+  const spends = recs.flatMap((r) => (r.spent_krw == null ? [] : [r.spent_krw])).sort((a, b) => a - b);
+  const mid = spends.length >> 1;
+  const median =
+    spends.length === 0 ? null : Math.round(spends.length % 2 ? spends[mid] : (spends[mid - 1] + spends[mid]) / 2);
+  const tally = (key: MarkerKey) => ({
+    [`${key}_yes`]: recs.filter((r) => r[key] === true).length,
+    [`${key}_answers`]: recs.filter((r) => r[key] != null).length,
+  });
+  return {
+    ...place,
+    recommendation_count: recs.length,
+    last_recommended_at: recs.reduce<string | null>((max, r) => (max == null || r.created_at > max ? r.created_at : max), null),
+    median_spent_krw: median,
+    spend_reports: spends.length,
+    ...tally('english_staff'),
+    ...tally('english_menu'),
+    ...tally('solo_friendly'),
+  } as PlaceStats;
 }

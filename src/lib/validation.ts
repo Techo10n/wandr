@@ -40,3 +40,13 @@ export function errorMessage(error: unknown): string {
   }
   return message || 'Something went wrong. Try again.';
 }
+
+/** Parses the "what you spent" field: blank means not reported. */
+export function parseSpent(input: string): { value: number | null } | { error: string } {
+  const cleaned = input.replace(/[\s,₩]/g, '');
+  if (!cleaned) return { value: null };
+  if (!/^\d+$/.test(cleaned)) return { error: 'Enter what you spent in won, like 9000.' };
+  const value = Number(cleaned);
+  if (value > 500000) return { error: 'That’s more than ₩500,000. Check the amount.' };
+  return { value };
+}

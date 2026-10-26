@@ -1,4 +1,4 @@
-import { errorMessage, validateUsername } from './validation';
+import { errorMessage, parseSpent, validateUsername } from './validation';
 
 describe('validateUsername', () => {
   it('accepts lowercase letters, digits and underscores, 3–20 long', () => {
@@ -72,5 +72,23 @@ describe('errorMessage', () => {
   it('falls back to the original message, then a generic one', () => {
     expect(errorMessage({ message: 'Something specific' })).toBe('Something specific');
     expect(errorMessage(null)).toBe('Something went wrong. Try again.');
+  });
+});
+
+describe('parseSpent', () => {
+  it('is null when left blank', () => {
+    expect(parseSpent('')).toEqual({ value: null });
+    expect(parseSpent('  ')).toEqual({ value: null });
+  });
+  it('accepts whole won amounts, with or without separators', () => {
+    expect(parseSpent('9000')).toEqual({ value: 9000 });
+    expect(parseSpent('12,500')).toEqual({ value: 12500 });
+    expect(parseSpent('₩8,000')).toEqual({ value: 8000 });
+    expect(parseSpent('0')).toEqual({ value: 0 });
+  });
+  it('rejects non-numbers and out-of-range amounts', () => {
+    expect(parseSpent('cheap')).toEqual({ error: 'Enter what you spent in won, like 9000.' });
+    expect(parseSpent('9.5')).toEqual({ error: 'Enter what you spent in won, like 9000.' });
+    expect(parseSpent('500001')).toEqual({ error: 'That’s more than ₩500,000. Check the amount.' });
   });
 });

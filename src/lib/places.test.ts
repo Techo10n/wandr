@@ -9,7 +9,9 @@ import {
   naverUrls,
   pluralize,
   sortPlaces,
+  statsFromRecs,
   type PlaceStats,
+  type RecommendationFields,
 } from './places';
 
 function place(overrides: Partial<PlaceStats>): PlaceStats {
@@ -196,5 +198,36 @@ describe('pluralize', () => {
     expect(pluralize(1, 'place')).toBe('1 place');
     expect(pluralize(3, 'place')).toBe('3 places');
     expect(pluralize(0, 'place')).toBe('0 places');
+  });
+});
+
+describe('statsFromRecs (mirrors the place_stats view)', () => {
+  const base = place({ id: 'x', recommendation_count: 99 });
+  const rec = (o: Partial<RecommendationFields>): RecommendationFields => ({
+    spent_krw: null, english_staff: null, english_menu: null, solo_friendly: null, created_at: '2026-10-01T00:00:00Z', ...o,
+  });
+
+  it('counts recommendations and finds the latest', () => {
+    const s = statsFromRecs(base, [rec({ created_at: '2026-10-02T00:00:00Z' }), rec({ created_at: '2026-10-05T00:00:00Z' })]);
+    expect(s.recommendation_count).toBe(2);
+    expect(s.last_recommended_at).toBe('2026-10-05T00:00:00Z');
+  });
+  it('takes the median of reported spend, averaging the middle pair and ignoring nulls', () => {
+    expect(statsFromRecs(base, [rec({ spent_krw: 6000 }), rec({ spent_krw: 25000 }), rec({ spent_krw: 9000 }), rec({})])).toMatchObject({
+      median_spent_krw: 9000, spend_reports: 3,
+    });
+    expect(statsFromRecs(base, [rec({ spent_krw: 7000 }), rec({ spent_krw: 8000 })]).median_spent_krw).toBe(7500);
+    expect(statsFromRecs(base, [rec({ spent_krw: 7001 }), rec({ spent_krw: 7002 })]).median_spent_krw).toBe(7002);
+  });
+  it('has no median without reports', () => {
+    expect(statsFromRecs(base, [rec({})])).toMatchObject({ median_spent_krw: null, spend_reports: 0 });
+  });
+  it('counts yes out of answered, treating null as unanswered', () => {
+    const s = statsFromRecs(base, [rec({ english_staff: true }), rec({ english_staff: false }), rec({ english_staff: null }), rec({ english_staff: true })]);
+    expect(s).toMatchObject({ english_staff_yes: 2, english_staff_answers: 3 });
+  });
+  it('keeps the place fields', () => {
+    expect(statsFromRecs(base, []).id).toBe('x');
+    expect(statsFromRecs(base, []).recommendation_count).toBe(0);
   });
 });
