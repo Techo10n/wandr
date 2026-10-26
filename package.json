@@ -49,7 +49,7 @@
     "lint": "expo lint",
     "test": "jest",
     "typecheck": "tsc --noEmit",
-    "seed": "node --env-file=.env --experimental-strip-types scripts/seed.ts"
+    "seed": "node --env-file=.env --experimental-strip-types scripts/seed.mts"
   },
   "private": true,
   "jest": {
