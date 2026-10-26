@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "wandr",
+    "name": "Wandr",
     "slug": "wandr",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -8,7 +8,13 @@
     "scheme": "wandr",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "bundleIdentifier": "com.techolon.wandr",
+      "infoPlist": {
+        "LSApplicationQueriesSchemes": [
+          "nmap"
+        ]
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -17,7 +23,8 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.techolon.wandr"
     },
     "web": {
       "output": "static",
@@ -31,6 +38,14 @@
           "backgroundColor": "#208AEF",
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
+        }
+      ],
+      "expo-sqlite",
+      "expo-image",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Wandr uses your photos to set your profile picture."
         }
       ]
     ],
