@@ -25,7 +25,7 @@ export default function RootLayout() {
               headerStyle: { backgroundColor: colors.background },
               contentStyle: { backgroundColor: colors.background },
             }}>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="(tabs)" options={{ headerShown: false, title: 'Wandr' }} />
             <Stack.Screen name="place/[id]" options={{ title: '' }} />
             <Stack.Screen name="user/[username]" options={{ title: '' }} />
             <Stack.Screen name="sign-in" options={modal} />

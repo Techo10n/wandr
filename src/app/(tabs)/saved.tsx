@@ -12,25 +12,21 @@ import { useSaves } from '@/context/saves';
 import { DEFAULT_FILTERS, filterPlaces, pluralize, sortPlaces, type SortKey } from '@/lib/places';
 import { colors, spacing, typography } from '@/theme/tokens';
 
-export default function SavedScreen() {
-  const { session, requireAuth } = useAuth();
-  const places = usePlaces();
-  const saves = useSaves();
-  const [filters, setFilters] = useState(DEFAULT_FILTERS);
-  const [sort, setSort] = useState<SortKey>('saved');
-  const [refreshing, setRefreshing] = useState(false);
-
-  const header = (
+function Header() {
+  return (
     <View style={styles.header}>
       <Text style={styles.title}>Saved</Text>
       <Text style={styles.subtitle}>Narrow your pile down to tonight’s pick</Text>
     </View>
   );
+}
 
-  if (!session) {
+export default function SavedScreen() {
+  const { userId, requireAuth } = useAuth();
+  if (!userId) {
     return (
       <SafeAreaView style={styles.screen} edges={['top']}>
-        {header}
+        <Header />
         <StateView
           icon={{ ios: 'bookmark.fill', android: 'bookmark', web: 'bookmark' }}
           title="Keep the places you find"
@@ -40,6 +36,16 @@ export default function SavedScreen() {
       </SafeAreaView>
     );
   }
+  // Keyed by user so filters never carry over to the next person on a shared phone.
+  return <SavedList key={userId} />;
+}
+
+function SavedList() {
+  const places = usePlaces();
+  const saves = useSaves();
+  const [filters, setFilters] = useState(DEFAULT_FILTERS);
+  const [sort, setSort] = useState<SortKey>('saved');
+  const [refreshing, setRefreshing] = useState(false);
 
   const saved = places.places.filter((p) => saves.isSaved(p.id));
   const neighborhoods = [...new Set(saved.flatMap((p) => (p.neighborhood ? [p.neighborhood] : [])))].sort();
@@ -56,7 +62,7 @@ export default function SavedScreen() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
-      {header}
+      <Header />
       <FlatList
         data={loading || error ? [] : results}
         keyExtractor={(p) => p.id}

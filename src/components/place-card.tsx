@@ -62,12 +62,21 @@ export function SaveButton({ placeId, size = 22 }: { placeId: string; size?: num
 }
 
 export function PlaceCard({ place }: { place: PlaceStats }) {
+  const { requireAuth } = useAuth();
+  const { isSaved, setSaved } = useSaves();
+  const saved = isSaved(place.id);
   const badges = badgesFor(place);
   const hasSpend = place.spend_reports > 0 && place.median_spent_krw != null;
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={place.name_en}
+      // The nested bookmark isn't reachable by VoiceOver inside a button, so expose it as an action.
+      accessibilityActions={[{ name: 'activate' }, { name: 'save', label: saved ? 'Unsave' : 'Save' }]}
+      onAccessibilityAction={(e) => {
+        if (e.nativeEvent.actionName === 'save') requireAuth(() => setSaved(place.id, !saved));
+        else router.push({ pathname: '/place/[id]', params: { id: place.id } });
+      }}
       onPress={() => router.push({ pathname: '/place/[id]', params: { id: place.id } })}
       style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}>
       <View style={styles.top}>

@@ -17,7 +17,8 @@ import { colors, radius, spacing, typography } from '@/theme/tokens';
 export type IconName = SymbolViewProps['name'];
 
 export function Icon({ name, size = 20, color = colors.text }: { name: IconName; size?: number; color?: string }) {
-  return <SymbolView name={name} size={size} tintColor={color} />;
+  // Decorative: the surrounding control carries the accessible label.
+  return <SymbolView name={name} size={size} tintColor={color} accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" />;
 }
 
 export function Button({
