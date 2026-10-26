@@ -24,7 +24,7 @@ export default function SignInScreen() {
   const params = useLocalSearchParams<{ mode?: Mode }>();
   const { finishSignIn } = useAuth();
   const insets = useSafeAreaInsets();
-  const [mode, setMode] = useState<Mode>(params.mode === 'sign-up' ? 'sign-up' : 'sign-in');
+  const [mode, setMode] = useState<Mode>(params.mode === 'sign-up' || params.mode === 'forgot' ? params.mode : 'sign-in');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');

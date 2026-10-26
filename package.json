@@ -50,7 +50,8 @@
     "lint": "expo lint",
     "test": "jest",
     "typecheck": "tsc --noEmit",
-    "seed": "node --env-file=.env --experimental-strip-types scripts/seed.mts"
+    "seed": "node --env-file=.env --experimental-strip-types scripts/seed.mts",
+    "verify:rls": "node --env-file=.env --experimental-strip-types scripts/verify-rls.mts"
   },
   "private": true,
   "jest": {
